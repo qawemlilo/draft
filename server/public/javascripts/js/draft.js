@@ -53,13 +53,12 @@ var DRAFT = {
 	
 	// holds values for current player
 	me: {   
-	    action: '',
 		color: '',
 		id: 0,
 		from: '',
+        oppId: 0,
 		to: '',
-		remove: '',
-		oppId: 0
+		remove: ''
     },
 
 	
@@ -72,7 +71,7 @@ var DRAFT = {
     
 	//Call to initialize the game
 	init: function (div, opts, s) {
-	    var view = "render_white_pons", $this = this;
+	    var view = "render_white_pons", $this = DRAFT;
         
         $this.socket = s;
          
@@ -90,9 +89,14 @@ var DRAFT = {
 		$this.me.color = opts.color;
         $this.me.id = opts.id || '';
         $this.me.oppId = opts.opponent || 0;
-		 
-		$this[view](div);
-		 
+        
+		$this[view](div)
+          .makeDraggable()
+            .makeWhiteboxUndroppable()
+              .makeBlackboxDroppable();
+              
+        $('.'+$this.me.color).draggable('disable');
+        
 		return $this;
 	},
     

@@ -1,6 +1,6 @@
-(function(draftEvent) {    
-    draftEvent.makeDraggable = function () { 	// makes
-	    var CURRENT, $this = this,
+(function(draft) {    
+    draft.makeDraggable = function () { 	// makes
+	    var CURRENT, $this = draft,
         params = {			 
 		     scroll: false,
              drag: function(event, ui) { 
@@ -28,8 +28,8 @@
 
 
 
-    draftEvent.makeWhiteboxUndroppable = function() { 
-	    var $this = this;
+    draft.makeWhiteboxUndroppable = function() { 
+	    var $this = draft;
 		$(".white_div").droppable({		
 			    drop: function(event, ui) {
                     $this.shout('ERROR! Illigal Move', 'error');
@@ -45,8 +45,8 @@
 
 
 	//Allow pons to be dropped on the back squares
-    draftEvent.makeBlackboxDroppable = function() {
-	    var to = null, $this = this;
+    draft.makeBlackboxDroppable = function() {
+	    var to = null, $this = draft;
 	
         $(".black_div").droppable({	
 		    accept: '.pon',
@@ -65,27 +65,16 @@
     };
     
 	
-    draftEvent.moveComplete = function () {
-	    var $this = this;
-		
-		$this.me.action = 'move';
-        
-        if (!$this.me.oppId) {
-            $this.me.oppId = $this.opponent.id;
-        }
-        
-        console.log(JSON.stringify($this.me));
-        
-        $//this.socket.emit('move', JSON.stringify($this.me));
-		
-		return $this;
+    draft.moveComplete = function () {
+	    draft.socket.emit('move', JSON.stringify(draft.me));
+		return draft;
     };
 
 
 	
-    draftEvent.onMove = function (from, to, colo, remove) {
+    draft.onMove = function (from, to, colo, remove) {
 	    var next_move_num = parseInt(to), next_move_alph = to.charAt(1),
-	    alph = from.charAt(1), num = from.charAt(0), $this = this, 
+	    alph = from.charAt(1), num = from.charAt(0), $this = draft, 
 			
 	    cell_from = $('#'+from), cell_to = $('#'+to), cell_remove;
          
@@ -98,10 +87,8 @@
 	
 	    if (remove) {
 		    cell_remove = $('#' + remove)
-		    $this.Score[colo] += 10;
 	        cell_remove.empty();
 		    $this.board.cells[remove.charAt(1)][parseInt(remove)] = null;
-			$('#'+colo+'_score').html($this.Score[colo]);
 			cell_remove = null;
 	    }
 		cell_from = null;
@@ -110,8 +97,8 @@
     };
 	
 
-    draftEvent.movePon = function (current_div_id, moved_to) {
-        var $this = this, next_move_num = parseInt(moved_to), next_move_alph = moved_to.charAt(1),
+    draft.movePon = function (current_div_id, moved_to) {
+        var $this = draft, next_move_num = parseInt(moved_to), next_move_alph = moved_to.charAt(1),
 	        alph = current_div_id.charAt(1), num = parseInt(current_div_id),
             other_player = ($this.me.color === 'white') ? 'red' : 'white', 
             red_num = (num < next_move_num) ? num + 1 : num - 1,

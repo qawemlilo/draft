@@ -47,8 +47,13 @@ App = {
                 
                 if (accept) {
                     App.user.color = 'red';
-                    DRAFT.init('game', App.user, socket);
+                    
                     DRAFT.opponent = App.opponent = new User(data);
+                    
+                    console.log(JSON.stringify(App.user));
+                    
+                    DRAFT.init('game', App.user, socket);
+                    
                     socket.emit('accept', JSON.stringify(App.user));
                 }
                 else {
@@ -69,21 +74,28 @@ App = {
                 var data = JSON.parse(response);
                 
                 if (data.action === 'move') {
-                    DRAFT.onMove(data.from, data.to, data.color, data.remove).makeDraggable();
+                
+                    console.log(JSON.stringify(data));
                     
+                    DRAFT.onMove(data.from, data.to, App.opponent.color, data.remove);
+                    
+                    $('.'+DRAFT.me.color).draggable('enable');
                     App.shout('Your turn to move.', 'notice', 5);
                 }
             });
             
             
             socket.on('start game', function (response) {
-                var data = JSON.parse(response);   
+                var data = JSON.parse(response); 
                 
-                App.user.opponent = App.opponent = new User(data);
+                App.user.opponent = data.id;               
+                App.opponent = new User(data);
+                App.opponent.color = 'red';
+                DRAFT.opponent = App.opponent;
                 
-                DRAFT.makeDraggable()
-                  .makeWhiteboxUndroppable()
-                   .makeBlackboxDroppable(); 
+                DRAFT.init('game', App.user, socket);
+                
+                $('.'+DRAFT.me.color).draggable('enable');
 
                 App.shout('A new game has started, make your first move.', 'notice', 5);                   
             });
@@ -96,7 +108,7 @@ App = {
     opponent: {},
     
     shout: function (msg, msgType, sec) {
-        DRAFT.shout.call(this, msg, msgType, sec);
+        DRAFT.shout.call(App, msg, msgType, sec);
     }
 };
 
