@@ -113,5 +113,3 @@ exports.updateOpponent = function (id, opp) {
 exports.destroy = function (id) {
     delete Players[id];    
 };
-
-

@@ -39,6 +39,20 @@ app.listen(3000);
 
 io.sockets.on('connection', function (socket) {
 
+    function cleanUp () {
+        setInterval(function() {
+            process.nextTick(function() {
+                for (key in draft.Players) {
+                    var soc = Players[key].socket;
+                    
+                    if (!io.sockets.sockets[soc]) {
+                        delete draft.Players[key];
+                    }
+                }
+            });
+        }, 5 * 1000);
+    }
+    
     socket.on('new user', function () {
         draft.createPlayer(socket.id, function (err, player) {
             if(!err){
@@ -143,6 +157,7 @@ io.sockets.on('connection', function (socket) {
         });
     });
     
+    cleanUp();
 });
 
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
