@@ -43,7 +43,7 @@ io.sockets.on('connection', function (socket) {
         setInterval(function() {
             process.nextTick(function() {
                 for (key in draft.Players) {
-                    var soc = Players[key].socket;
+                    var soc = draft.Players[key].socket;
                     
                     if (!io.sockets.sockets[soc]) {
                         delete draft.Players[key];
