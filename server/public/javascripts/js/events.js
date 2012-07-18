@@ -66,6 +66,7 @@
     
 	
     draft.moveComplete = function () {
+        draft.me.action = 'move';
 	    draft.socket.emit('move', JSON.stringify(draft.me));
 		return draft;
     };

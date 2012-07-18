@@ -52,7 +52,8 @@ var DRAFT = {
 	opponent: {},
 	
 	// holds values for current player
-	me: {   
+	me: {
+        action: '',    
 		color: '',
 		id: 0,
 		from: '',
@@ -73,7 +74,9 @@ var DRAFT = {
 	init: function (div, opts, s) {
 	    var view = "render_white_pons", $this = DRAFT;
         
-        $this.socket = s;
+        if (s) {
+            $this.socket = s;
+        }
          
 	    if (!opts.color) {
 		    opts.color = "white";			 
@@ -102,13 +105,10 @@ var DRAFT = {
     
     
     shout: function (msg, msgType, secs) {
-		if ($("#appMessage")) {
-			$("#appMessage").fadeOut(function(){
-				$("#appMessage").remove();
-			});
-		}
-		
-	    var elem = $('<div>', {'id': 'appMessage', 'class': msgType || 'notice', 'html': msg});
+    
+        $("#appMessage").remove();
+        
+        var elem = $('<div>', {'id': 'appMessage', 'class': msgType || 'notice', 'html': msg});
 		
 		elem.click (function () {
 			$(this).fadeOut(function(){

@@ -1,5 +1,5 @@
 
-var Player, Waiting = [], clone, Players = {}, uid, nextID, addPawnCollection, getPawnCollection, deleteGame, addPlayer, getOpponent, Counter = 0;
+var Player, Players = {}, uid, nextID, addPawnCollection, getPawnCollection, deleteGame, addPlayer, getOpponent, Counter = 0;
 
 
 /* 
@@ -51,7 +51,7 @@ nextID = function () {
 */
 
 exports.createPlayer = function (socketid, fn) {
-    var id = uid(), userCounter, name, obj = {}, err;
+    var id = uid(), userCounter, name, obj = {}, err = false;
     
     if (!Players.hasOwnProperty(id)) {
         obj.name = 'user_' + nextID();
@@ -60,20 +60,19 @@ exports.createPlayer = function (socketid, fn) {
         obj.waiting = true; 
         
         Players[id] = new Player(obj); 
-        
-        Waiting.push(id);
     }
     
-    err = !!(Players[id].id);
+    if (!Players.hasOwnProperty(id)) {
+        err = true;
+    }
     
-    fn(!err, Players[id]);
+    fn(err, Players[id]);
 };
 
 
 exports.getFromQueue = function (id, fn) {
-    var result = false;
     for (key in Players) {
-        if (Players[key].id !== id && Players[key].waiting === true) {
+        if (Players[key].id !== id && Players[key].waiting) {
             Players[key].waiting = false;
             fn(false, Players[key]);
             return;
@@ -90,8 +89,7 @@ exports.getOpponentBySocket = function (socket, fn) {
             var opponent = Players[key].opponent;
             
             if (opponent) {
-                Players[opponent].opponent = key;
-                
+                Players[opponent].opponent = key; 
                 fn(false, Players[opponent]);
                 return;
             }
@@ -102,12 +100,8 @@ exports.getOpponentBySocket = function (socket, fn) {
 };
 
 
-exports.addToQueue = function (id, fn) {
+exports.addToQueue = function (id) {
     Players[id].waiting = true; 
-    
-    if (fn) {
-        fn();
-    }
 };
 
 
@@ -115,27 +109,14 @@ exports.getPlayer = function (id, fn) {
     fn(false, Players[id]);        
 };
 
-exports.updateOpponent = function (id, opp, fn) { 
+
+exports.updateOpponent = function (id, opp) { 
     Players[id].opponent = opp; 
-    
-    if (opp) {
-        Players[id].waiting = false;
-    }
-    else {
-        Players[id].waiting = true;
-    }
-    
-    if (fn) {
-        fn();
-    }    
 };
 
-exports.destroy = function (id, fn) {
-    delete Players[id]; 
 
-    if (fn) {
-        fn();
-    }    
+exports.destroy = function (id) {
+    delete Players[id];    
 };
 
 

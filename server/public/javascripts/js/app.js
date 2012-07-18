@@ -12,30 +12,41 @@ var User = function (o) {
 App = {
 
     init: function() {
-        var socket = io.connect('http://draft.rflab.co.za/'), sendChallenge, notFound;
+        var socket = io.connect('http://localhost:3000'), sendChallenge, notFound;
+        
+        DRAFT.init('game', {});
+        App.shout('Connecting, please wait.....');
+        
+        console.log('starting');
         
         socket.on('connect', function () {
             socket.emit('new user');
+            
+            console.log('connected');
             
             socket.on('user created', function (response) {
                 data = JSON.parse(response);
                 
                 App.user = new User(data);
                 DRAFT.init('game', data, socket);
-                
+                console.log('user created');
                 if (!App.opponent.hasOwnProperty('id') || !App.opponent.id) {
-                    App.shout('Please wait while we search for an opponent....');
+                    console.log('searching for opponent');
+                    App.shout('Searching for available players.....');
                     socket.emit('challenge', JSON.stringify(App.user));  
                 }
             });
             
             
             socket.on('not found', function () {
-                App.shout('No opponents available at the moment.', 'notice', 5);  
+                App.shout('No players available at the moment. Invite a friend by sending them a link to this page.');  
             });
             
             socket.on('opponent quit', function () {
                 App.shout('Like a chicken, your opponent has quit.', 'notice', 5);
+                App.user.opponent = '';
+                DRAFT.opponent = App.opponent = {};
+                DRAFT.init('game', {});
             });
            
   
@@ -47,11 +58,7 @@ App = {
                 
                 if (accept) {
                     App.user.color = 'red';
-                    
                     DRAFT.opponent = App.opponent = new User(data);
-                    
-                    console.log(JSON.stringify(App.user));
-                    
                     DRAFT.init('game', App.user, socket);
                     
                     socket.emit('accept', JSON.stringify(App.user));
@@ -74,13 +81,10 @@ App = {
                 var data = JSON.parse(response);
                 
                 if (data.action === 'move') {
-                
-                    console.log(JSON.stringify(data));
-                    
                     DRAFT.onMove(data.from, data.to, App.opponent.color, data.remove);
                     
                     $('.'+DRAFT.me.color).draggable('enable');
-                    App.shout('Your turn to move.', 'notice', 5);
+                    App.shout('Your turn to move.');
                 }
             });
             
@@ -97,7 +101,7 @@ App = {
                 
                 $('.'+DRAFT.me.color).draggable('enable');
 
-                App.shout('A new game has started, make your first move.', 'notice', 5);                   
+                App.shout('A new game has started, make your first move.');                   
             });
         
         }); 

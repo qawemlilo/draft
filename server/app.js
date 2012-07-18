@@ -64,6 +64,9 @@ io.sockets.on('connection', function (socket) {
                         opponentSocket.emit('challenge', JSON.stringify(player));
                     }
                 }
+                else {
+                    socket.emit('not found');
+                }
             });
         });  
     });
@@ -124,15 +127,14 @@ io.sockets.on('connection', function (socket) {
     
     socket.on('disconnect', function () {
         var opponentSocket;
-        
+
         draft.getOpponentBySocket(socket.id, function(err, opponent) {
             if (!err) {
                 opponentSocket = io.sockets.sockets[opponent.socket];
                 opponentSocket.emit('opponent quit');
                 
-                draft.destroy(opponent.opponent, function(){
-                    draft.addToQueue(opponent.id);
-                });
+                draft.destroy(opponent.opponent);
+                draft.addToQueue(opponent.id);
             }
         });
     });
