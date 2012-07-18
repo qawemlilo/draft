@@ -127,14 +127,18 @@ io.sockets.on('connection', function (socket) {
     
     socket.on('disconnect', function () {
         var opponentSocket;
-
-        draft.getOpponentBySocket(socket.id, function(err, opponent) {
-            if (!err) {
-                opponentSocket = io.sockets.sockets[opponent.socket];
-                opponentSocket.emit('opponent quit');
+        
+        draft.getPlayerBySocket(socket.id, function(err, player) {
+            if (!err && player.opponent) {
+                draft.getPlayer(player.opponent, function (err, opponent) {
+                    if (!err) {
+                        opponentSocket = io.sockets.sockets[opponent.socket];
+                        opponentSocket.emit('opponent quit');
                 
-                draft.destroy(opponent.opponent);
-                draft.addToQueue(opponent.id);
+                        draft.destroy(player.id);
+                        draft.addToQueue(opponent.id);
+                    }
+                });
             }
         });
     });

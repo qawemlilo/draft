@@ -83,16 +83,11 @@ exports.getFromQueue = function (id, fn) {
 };
 
 
-exports.getOpponentBySocket = function (socket, fn) {
+exports.getPlayerBySocket = function (socket, fn) {
     for (key in Players) {
         if (Players[key].socket === socket) {
-            var opponent = Players[key].opponent;
-            
-            if (opponent) {
-                Players[opponent].opponent = key; 
-                fn(false, Players[opponent]);
-                return;
-            }
+            fn(false, Players[key]);
+            return;
         }
     }
 

@@ -43,7 +43,8 @@ App = {
             });
             
             socket.on('opponent quit', function () {
-                App.shout('Like a chicken, your opponent has quit.', 'notice', 5);
+                console.log('opponent has quit');
+                App.shout('Your opponent has quit.', 'notice', 5);
                 App.user.opponent = '';
                 DRAFT.opponent = App.opponent = {};
                 DRAFT.init('game', {});
