@@ -106,16 +106,19 @@ App = {
                 var data = JSON.parse(response);
                 
                 if (Object.prototype.toString.call( data ) === '[object Array]' && data.length > 0) {
-                    var i, all = '<h3 style="ma">Players online</h3>', name;
+                    var i, all = '<h3 style="ma">Players online</h3>';
                     
                     for (i = 0; i < data.length; i++) {
-                        if (data[i].name === App.user.name) {
-                           name = 'You';
+                        if (data[i].id === App.user.id) {
+                           all += '<p style="color:green">[ You ]</p>';
+                        }
+                        if (data[i].opponent === App.user.opponent) {
+                           all += '<p style="color:red">[ Your opponent ]</p>';
                         }
                         else {
-                            name = data[i].name;
+                            all += '<p style="color:white">[ ' + data[i].name; + ' ]</p>'; 
                         }
-                        all += '<p style="color:white">[ ' + name + ' ]</p>';
+  
                     }
                     
                     $('#mypanel').empty().html(all);
