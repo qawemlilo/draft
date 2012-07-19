@@ -30,7 +30,6 @@ App = {
                     App.shout('Searching for available players.....');
                     socket.emit('challenge', JSON.stringify(App.user));  
                 }
-                console.log(App.user.id);
             });
             
             
@@ -124,11 +123,6 @@ App = {
                     $('#mypanel').empty().html(all);
                 }
             });
-            
-            socket.on('socks', function (response) {
-                console.log(response);
-            });
-        
         }); 
     },    
     
