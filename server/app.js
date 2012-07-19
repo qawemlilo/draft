@@ -42,8 +42,7 @@ io.sockets.on('connection', function (socket) {
     function cleanUp () {
     
         clearInterval(intervalID);
-        
-        process.nextTick(function () {
+
         intervalID = setInterval(function () {
             var mysocket = !!io.sockets.sockets[socket.id], online;
         
@@ -56,8 +55,7 @@ io.sockets.on('connection', function (socket) {
                     } 
                 });
             }        
-        }, 5000);  
-        });        
+        }, 5000);         
     }
     
     
