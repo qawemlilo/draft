@@ -31,7 +31,7 @@ exports.createPlayer = function (socketid, fn) {
     var id = socketid + '', userCounter, name, obj = {}, err = false;
     
     if (!Players.hasOwnProperty(id)) {
-        obj.name = 'user_' + nextID();
+        obj.name = 'Player ' + nextID();
         obj.id = id;
         obj.socket = socketid; 
         obj.waiting = true; 
@@ -60,8 +60,23 @@ exports.getFromQueue = function (id, fn) {
 };
 
 
+exports.playersOnline = function () {
+    var allplayers = [];
+    
+    for (key in Players) {
+        allplayers.push(Players[key]);   
+    }
+
+    allplayers = JSON.stringify(allplayers);
+    
+    return allplayers;
+};
+
+
 exports.addToQueue = function (id) {
-    Players[id].waiting = true; 
+    if (Players.hasOwnProperty(id)) {
+        Players[id].waiting = true;
+    }    
 };
 
 
@@ -72,22 +87,26 @@ exports.getPlayer = function (id, fn) {
         err = true;
     }
     
-    fn(err, Players[id]);        
+    fn(err, Players[id]);
 };
 
 
 exports.updateOpponent = function (id, opp) { 
-    Players[id].opponent = opp;
+    if (Players.hasOwnProperty(id)) {
+        Players[id].opponent = opp;
     
-    if (opp) {
-        Players[id].waiting = false;    
-    }
-    else {
-        Players[id].waiting = true;
+        if (opp) {
+            Players[id].waiting = false;    
+        }
+        else {
+             Players[id].waiting = true;
+        }
     }
 };
 
 
 exports.destroy = function (id) {
-    delete Players[id];    
+    if (Players.hasOwnProperty(id)) {
+        delete Players[id];
+    }        
 };

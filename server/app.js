@@ -9,7 +9,7 @@ var express = require('express')
   , draft = require('./draft');
 
 var app = module.exports = express.createServer(),
-    io = io.listen(app);
+    io = io.listen(app), intervalID;
 
 // Configuration
 
@@ -38,13 +38,40 @@ app.listen(3000);
 
 
 io.sockets.on('connection', function (socket) {
+
+    function cleanUp () {
+    
+        clearInterval(intervalID);
+        
+        process.nextTick(function () {
+        intervalID = setInterval(function () {
+            var mysocket = !!io.sockets.sockets[socket.id], online;
+        
+            if (!mysocket) {
+                draft.getPlayer(socket.id, function (err, player) {
+                    if (!err) {
+                        draft.destroy(socket.id);
+                        online = draft.playersOnline();
+                        io.sockets.emit('online', online);
+                    } 
+                });
+            }        
+        }, 5000);  
+        });        
+    }
+    
     
     socket.on('new user', function () {
         draft.createPlayer(socket.id, function (err, player) {
-            if(!err){
-                socket.emit('user created', JSON.stringify(player));   
+            if (!err) {
+                var online = draft.playersOnline();
+                
+                socket.emit('user created', JSON.stringify(player));
+                io.sockets.emit('online', online);
             }
-        }); 
+        });
+        
+        cleanUp();
     });
     
 
@@ -54,7 +81,7 @@ io.sockets.on('connection', function (socket) {
         draft.getPlayer(data.id, function (err, player) {
             draft.getFromQueue(data.id, function (err, opponent) {
                 if (!err) {
-                    if (!io.sockets.sockets[opponent.socket]) {
+                    if (!io.sockets.sockets.hasOwnProperty(opponent.socket)) {
                         socket.emit('not found');
                     }
                     else {
@@ -134,18 +161,35 @@ io.sockets.on('connection', function (socket) {
             if (!err && player.opponent) {
                 draft.getPlayer(player.opponent, function (err, opponent) {
                     if (!err) {
-                        var opponentSocket = io.sockets.sockets[opponent.socket];
+                        var opponentSocket = io.sockets.sockets[opponent.socket], online;
                         opponentSocket.emit('opponent quit');
                 
                         draft.destroy(player.id);
                         delete io.sockets.sockets[player.socket];
                         
                         draft.addToQueue(opponent.id);
+                        
+                        online = draft.playersOnline();
+                        io.sockets.emit('online', online);
                     }
                 });
             }
         });
     });
+    
+    var intervalID = setInterval(function () {
+        var mysocket = !!io.sockets.sockets[socket.id], online;
+        
+        if (!mysocket) {
+            draft.getPlayer(socket.id, function (err, player) {
+                if (!err) {
+                    draft.destroy(socket.id);
+                    online = draft.playersOnline();
+                    io.sockets.emit('online', online);
+                } 
+            });
+        }        
+    }, 5000);
 });
 
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

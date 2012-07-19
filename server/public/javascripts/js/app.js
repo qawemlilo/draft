@@ -12,15 +12,14 @@ var User = function (o) {
 App = {
 
     init: function() {
-        var socket = io.connect('http://draft.rflab.co.za/'), sendChallenge, notFound;
+        var socket = io.connect('http://localhost:3000'), sendChallenge, notFound;
         
         DRAFT.init('game', {});
         App.shout('Connecting, please wait.....');
         
         socket.on('connect', function () {
             socket.emit('new user');
-
-            
+        
             socket.on('user created', function (response) {
                 data = JSON.parse(response);
                 
@@ -31,12 +30,14 @@ App = {
                     App.shout('Searching for available players.....');
                     socket.emit('challenge', JSON.stringify(App.user));  
                 }
+                console.log(App.user.id);
             });
             
             
             socket.on('not found', function () {
                 App.shout('No players available at the moment. Invite a friend by sending them a link to this page.');  
             });
+            
             
             socket.on('opponent quit', function () {
                 App.shout('Your opponent has quit.', 'notice', 5);
@@ -98,6 +99,31 @@ App = {
                 $('.'+DRAFT.me.color).draggable('enable');
 
                 App.shout('A new game has started, make your first move.', 'notice', 5);                   
+            });
+            
+            
+            socket.on('online', function (response) {
+                var data = JSON.parse(response);
+                
+                if (Object.prototype.toString.call( data ) === '[object Array]' && data.length > 0) {
+                    var i, all = '<h3 style="ma">Players online</h3>', name;
+                    
+                    for (i = 0; i < data.length; i++) {
+                        if (data[i].name === App.user.name) {
+                           name = 'You';
+                        }
+                        else {
+                            name = data[i].name;
+                        }
+                        all += '<p style="color:white">[ ' + name + ' ]</p>';
+                    }
+                    
+                    $('#mypanel').empty().html(all);
+                }
+            });
+            
+            socket.on('socks', function (response) {
+                console.log(response);
             });
         
         }); 
