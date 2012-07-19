@@ -17,33 +17,10 @@ Player = function (o) {
 };
 
 
-uid = function () {
-    var idx = [], itoh = '0123456789ABCDEF'.split(''), i;
-
-
-    for (i = 0; i < 36; i++) { 
-        idx[i] = 0xf & Math.random() * 0x10; 
-    }
-
-    idx[14] = 4; 
-    idx[19] = (idx[19] & 0x3) | 0x8;
-
-    for (i = 0; i < 36; i++) { 
-        idx[i] = itoh[idx[i]]; 
-    }
-
-    idx[8] = idx[13] = idx[18] = idx[23] = '-';
-
-    return idx.join('');
-};
-
-
 nextID = function () {
    Counter = Counter + 1;
    return Counter;
 };
-
-
 
 
 /* 

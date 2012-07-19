@@ -38,20 +38,6 @@ app.listen(3000);
 
 
 io.sockets.on('connection', function (socket) {
-
-    function cleanUp () {
-        setInterval(function() {
-            process.nextTick(function() {
-                for (key in draft.Players) {
-                    var soc = draft.Players[key].socket;
-                    
-                    if (!io.sockets.sockets[soc]) {
-                        delete draft.Players[key];
-                    }
-                }
-            });
-        }, 5 * 1000);
-    }
     
     socket.on('new user', function () {
         draft.createPlayer(socket.id, function (err, player) {
@@ -123,17 +109,21 @@ io.sockets.on('connection', function (socket) {
     
     
     socket.on('move', function (response) {
-        var data = JSON.parse(response), opponentSocket, relay_data = {};
+        var data = JSON.parse(response), opponentSocket, playerSocket, relay_data = {};
         
         relay_data.action = 'move';
         relay_data.from = data.from;
         relay_data.to = data.to;
         relay_data.remove = data.remove;
-        
+
         draft.getPlayer(data.oppId, function (err, opponent) {
             if (!err) {
                 opponentSocket = io.sockets.sockets[opponent.socket];
                 opponentSocket.emit('move', JSON.stringify(relay_data));
+            }
+            else {
+                socket.emit('opponent quit'); 
+                draft.updateOpponent(data.id, '');                
             }
         });
     });
@@ -148,14 +138,14 @@ io.sockets.on('connection', function (socket) {
                         opponentSocket.emit('opponent quit');
                 
                         draft.destroy(player.id);
+                        delete io.sockets.sockets[player.socket];
+                        
                         draft.addToQueue(opponent.id);
                     }
                 });
             }
         });
     });
-    
-    cleanUp();
 });
 
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
