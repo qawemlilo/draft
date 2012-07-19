@@ -111,11 +111,11 @@ App = {
                         if (data[i].id === App.user.id) {
                            all += '<p style="color:green">[ You ]</p>';
                         }
-                        if (data[i].opponent === App.user.opponent) {
+                        else if (data[i].opponent === App.user.opponent) {
                            all += '<p style="color:red">[ Your opponent ]</p>';
                         }
                         else {
-                            all += '<p style="color:white">[ ' + data[i].name; + ' ]</p>'; 
+                            all += '<p style="color:white">[ ' + data[i].name + ' ]</p>'; 
                         }
   
                     }
