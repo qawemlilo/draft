@@ -63,12 +63,12 @@ io.sockets.on('connection', function (socket) {
     
 
     socket.on('challenge', function (obj) {
-        var data = JSON.parse(obj), pponentSocket;
+        var data = JSON.parse(obj), opponentSocket;
         
         draft.getPlayer(data.id, function (err, player) {
             draft.getFromQueue(data.id, function (err, opponent) {
                 if (!err) {
-                    if (!opponent.hasOwnProperty('socket') || !opponent.socket || !io.sockets.sockets[opponent.socket]) {
+                    if (!io.sockets.sockets[opponent.socket]) {
                         socket.emit('not found');
                     }
                     else {
@@ -139,14 +139,12 @@ io.sockets.on('connection', function (socket) {
     });
     
     
-    socket.on('disconnect', function () {
-        var opponentSocket;
-        
-        draft.getPlayerBySocket(socket.id, function(err, player) {
+    socket.on('disconnect', function () { 
+        draft.getPlayer(socket.id + '', function(err, player) {
             if (!err && player.opponent) {
                 draft.getPlayer(player.opponent, function (err, opponent) {
                     if (!err) {
-                        opponentSocket = io.sockets.sockets[opponent.socket];
+                        var opponentSocket = io.sockets.sockets[opponent.socket];
                         opponentSocket.emit('opponent quit');
                 
                         draft.destroy(player.id);

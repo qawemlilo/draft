@@ -17,21 +17,17 @@ App = {
         DRAFT.init('game', {});
         App.shout('Connecting, please wait.....');
         
-        console.log('starting');
-        
         socket.on('connect', function () {
             socket.emit('new user');
-            
-            console.log('connected');
+
             
             socket.on('user created', function (response) {
                 data = JSON.parse(response);
                 
                 App.user = new User(data);
                 DRAFT.init('game', data, socket);
-                console.log('user created');
+
                 if (!App.opponent.hasOwnProperty('id') || !App.opponent.id) {
-                    console.log('searching for opponent');
                     App.shout('Searching for available players.....');
                     socket.emit('challenge', JSON.stringify(App.user));  
                 }
@@ -43,7 +39,6 @@ App = {
             });
             
             socket.on('opponent quit', function () {
-                console.log('opponent has quit');
                 App.shout('Your opponent has quit.', 'notice', 5);
                 App.user.opponent = '';
                 DRAFT.opponent = App.opponent = {};
@@ -74,7 +69,7 @@ App = {
                 App.user.opponent = '';
                 DRAFT.opponent = App.opponent = {};
                 
-                App.shout('No opponents available at the moment.', 'notice', 5);  
+                App.shout('No players available at the moment. Invite a friend by sending them a link to this page.');  
             });
             
  
@@ -85,7 +80,7 @@ App = {
                     DRAFT.onMove(data.from, data.to, App.opponent.color, data.remove);
                     
                     $('.'+DRAFT.me.color).draggable('enable');
-                    App.shout('Your turn to move.');
+                    App.shout('Your turn to move.', 'notice', 5);
                 }
             });
             
@@ -102,7 +97,7 @@ App = {
                 
                 $('.'+DRAFT.me.color).draggable('enable');
 
-                App.shout('A new game has started, make your first move.');                   
+                App.shout('A new game has started, make your first move.', 'notice', 5);                   
             });
         
         }); 

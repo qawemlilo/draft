@@ -51,7 +51,7 @@ nextID = function () {
 */
 
 exports.createPlayer = function (socketid, fn) {
-    var id = uid(), userCounter, name, obj = {}, err = false;
+    var id = socketid + '', userCounter, name, obj = {}, err = false;
     
     if (!Players.hasOwnProperty(id)) {
         obj.name = 'user_' + nextID();
@@ -83,30 +83,31 @@ exports.getFromQueue = function (id, fn) {
 };
 
 
-exports.getPlayerBySocket = function (socket, fn) {
-    for (key in Players) {
-        if (Players[key].socket === socket) {
-            fn(false, Players[key]);
-            return;
-        }
-    }
-
-    fn(true, {});   
-};
-
-
 exports.addToQueue = function (id) {
     Players[id].waiting = true; 
 };
 
 
 exports.getPlayer = function (id, fn) {
-    fn(false, Players[id]);        
+    var err = false;
+    
+    if (!Players.hasOwnProperty(id)) {
+        err = true;
+    }
+    
+    fn(err, Players[id]);        
 };
 
 
 exports.updateOpponent = function (id, opp) { 
-    Players[id].opponent = opp; 
+    Players[id].opponent = opp;
+    
+    if (opp) {
+        Players[id].waiting = false;    
+    }
+    else {
+        Players[id].waiting = true;
+    }
 };
 
 
