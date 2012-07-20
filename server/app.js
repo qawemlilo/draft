@@ -44,9 +44,9 @@ io.sockets.on('connection', function (socket) {
         clearInterval(intervalID);
 
         intervalID = setInterval(function () {
-            var mysocket = !!io.sockets.sockets[socket.id], online;
+            var online;
         
-            if (!mysocket) {
+            if (!io.sockets.sockets[socket.id]) {
                 draft.getPlayer(socket.id, function (err, player) {
                     if (!err) {
                         draft.destroy(socket.id);
@@ -58,6 +58,7 @@ io.sockets.on('connection', function (socket) {
         }, 5000);         
     }
     
+    cleanUp();
     
     socket.on('new user', function () {
         draft.createPlayer(socket.id, function (err, player) {
