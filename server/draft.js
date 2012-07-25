@@ -1,5 +1,9 @@
 
-var Player, Players = {}, uid, nextID, addPawnCollection, getPawnCollection, deleteGame, addPlayer, getOpponent, Counter = 0;
+var Player, 
+    Players = Object.create(Object.prototype), 
+    nextID,  
+    Counter = 0,
+    addToQueue;
 
 
 /* 
@@ -17,8 +21,21 @@ Player = function (o) {
 };
 
 
+addToQueue = function (id) {
+    if (Players.hasOwnProperty(id)) {
+        Players[id].opponent = '';
+        Players[id].waiting = true;
+        
+        return Players[id];
+    }
+    else {
+        return false;
+    }
+};
+
+
 nextID = function () {
-   Counter = Counter + 1;
+   Counter += 1;
    return Counter;
 };
 
@@ -27,31 +44,35 @@ nextID = function () {
     Public Methods
 */
 
+exports.players = function () {
+    return Players;
+};
+
 exports.createPlayer = function (socketid, fn) {
-    var id = socketid + '', userCounter, name, obj = {}, err = false;
+    var obj = {}, err = false;
     
-    if (!Players.hasOwnProperty(id)) {
+    if (!Players.hasOwnProperty(socketid)) {
         obj.name = 'Player ' + nextID();
-        obj.id = id;
+        obj.id = socketid;
         obj.socket = socketid; 
         obj.waiting = true; 
         
-        Players[id] = new Player(obj); 
+        Players[socketid] = new Player(obj); 
     }
     
-    if (!Players.hasOwnProperty(id)) {
+    if (!Players.hasOwnProperty(socketid)) {
         err = true;
     }
     
-    fn(err, Players[id]);
+    fn(err, Players[socketid]);
 };
 
 
 exports.getFromQueue = function (id, fn) {
-    for (key in Players) {
-        if (Players[key].id !== id && Players[key].waiting) {
-            Players[key].waiting = false;
-            fn(false, Players[key]);
+    for (var playerId in Players) {
+        if (Players[playerId].id !== id && Players[playerId].waiting) {
+            Players[playerId].waiting = false;
+            fn(false, Players[playerId]);
             return;
         }
     }
@@ -63,22 +84,14 @@ exports.getFromQueue = function (id, fn) {
 exports.playersOnline = function () {
     var allplayers = [];
     
-    for (key in Players) {
-        allplayers.push(Players[key]);   
+    for (var playerId in Players) {
+        allplayers.push(Players[playerId]);   
     }
 
     allplayers = JSON.stringify(allplayers);
     
     return allplayers;
 };
-
-
-exports.addToQueue = function (id) {
-    if (Players.hasOwnProperty(id)) {
-        Players[id].waiting = true;
-    }    
-};
-
 
 exports.getPlayer = function (id, fn) {
     var err = false;
@@ -90,23 +103,37 @@ exports.getPlayer = function (id, fn) {
     fn(err, Players[id]);
 };
 
-
 exports.updateOpponent = function (id, opp) { 
-    if (Players.hasOwnProperty(id)) {
+    if (Players.hasOwnProperty(id) && Players.hasOwnProperty(opp)) {
         Players[id].opponent = opp;
-    
-        if (opp) {
-            Players[id].waiting = false;    
-        }
-        else {
-             Players[id].waiting = true;
-        }
+        Players[opp].opponent = id;
+        
+        return true;
+    }
+    else if (Players.hasOwnProperty(id) && !opp) {
+        Players[id].opponent = opp;
+        return true;
+    }
+    else {
+       return false;
     }
 };
 
 
 exports.destroy = function (id) {
     if (Players.hasOwnProperty(id)) {
+        var opponent = Players[id].opponent;
+        
+        if (Players.hasOwnProperty(opponent)) {
+            addToQueue(opponent);
+        }
+
         delete Players[id];
-    }        
+        
+        return !(Players.hasOwnProperty(id));
+    }
+    else {
+        return false;
+    }
+    
 };

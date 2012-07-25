@@ -44,16 +44,16 @@ io.sockets.on('connection', function (socket) {
         clearInterval(intervalID);
 
         intervalID = setInterval(function () {
-            var online;
-        
-            if (!io.sockets.sockets[socket.id]) {
-                draft.getPlayer(socket.id, function (err, player) {
-                    if (!err) {
-                        draft.destroy(socket.id);
-                        online = draft.playersOnline();
-                        io.sockets.emit('online', online);
-                    } 
-                });
+            var online, id, players = draft.players();
+            
+            for (id in players) {
+                if (!io.sockets.sockets[id]) {
+                    console.log('Killing socket: ' + id);
+                    draft.destroy(id);
+                
+                    online = draft.playersOnline();
+                    io.sockets.emit('online', online);
+                }
             }        
         }, 5000);         
     }
@@ -85,7 +85,6 @@ io.sockets.on('connection', function (socket) {
                     }
                     else {
                         draft.updateOpponent(opponent.id, player.id);
-                        draft.updateOpponent(player.id, opponent.id);
                         opponentSocket = io.sockets.sockets[opponent.socket];
                         opponentSocket.emit('challenge', JSON.stringify(player));
                     }
@@ -124,7 +123,6 @@ io.sockets.on('connection', function (socket) {
                         opponentSocket = io.sockets.sockets[opponent.socket];
                 
                         draft.updateOpponent(me.id, opponent.id);
-                        draft.updateOpponent(opponent.id, me.id);
                         
                         opponentSocket.emit('start game', JSON.stringify(me));
                     }
@@ -165,9 +163,7 @@ io.sockets.on('connection', function (socket) {
                 
                         draft.destroy(player.id);
                         delete io.sockets.sockets[player.socket];
-                        
-                        draft.addToQueue(opponent.id);
-                        
+
                         online = draft.playersOnline();
                         io.sockets.emit('online', online);
                     }

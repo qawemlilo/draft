@@ -12,7 +12,7 @@ var User = function (o) {
 App = {
 
     init: function () {
-        var socket = io.connect('http://draft.rflab.co.za/'), sendChallenge, notFound;
+        var socket = io.connect('http://localhost:3000'), sendChallenge, notFound;
         
         DRAFT.init('game', {});
         App.shout('Connecting, please wait.....');
