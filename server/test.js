@@ -9,7 +9,7 @@ var express = require('express')
   , draft = require('./draft');
 
 var app = module.exports = express.createServer(),
-    io = io.listen(app), intervalID;
+    io = io.listen(app), intervalID, sessions = {}, sessionID, lastChallenge = '';
 
 // Configuration
 
@@ -35,39 +35,16 @@ app.configure('production', function(){
 
 app.get('/', function (req, res) {
     routes.index(req, res);
-})
+});
+ 
+app.listen(3000);
 
 io.sockets.on('connection', function (socket) {
-       
-    function cleanUp () {
-    
-        var counter = 0;
-        
-        clearInterval(intervalID);
-
-        intervalID = setInterval(function () {
-            var online, id, players = draft.players();
-
-            console.log('counter: ' + counter);
-            for (id in players) {
-                if (!io.sockets.sockets[id]) {
-                    console.log('Killing socket: ' + id);
-                    draft.destroy(id);
-                
-                    online = draft.playersOnline();
-                    io.sockets.emit('online', online);
-                }
-            }
-            
-            if (counter > 9) {
-                clearInterval(intervalID);               
-            }            
-        }, 5000);         
-    }
-    
     
     socket.on('new user', function () {
-
+    
+        //sessions[req.sessionID] = socket.id;
+        
         draft.createPlayer(socket.id, function (err, player) {
             if (!err) {
                 var online = draft.playersOnline();
@@ -76,8 +53,6 @@ io.sockets.on('connection', function (socket) {
                 io.sockets.emit('online', online);
             }
         });
-        
-        cleanUp();
     });
     
 
@@ -103,35 +78,19 @@ io.sockets.on('connection', function (socket) {
         });  
     });
     
-
-    socket.on('decline', function (response) {
-        var player = JSON.parse(response), opponentSocket;
-        
-        draft.getPlayer(player.opponent, function (err, opponent) {
-            if (!err) {
-                opponentSocket = io.sockets.sockets[opponent.socket];
-                
-                draft.updateOpponent(player.id, '');
-                draft.updateOpponent(opponent.id, '');
-                
-                opponentSocket.emit('declined');
-            }
-        });
-    }); 
-    
     
     socket.on('accept', function (response) {
-        var data = JSON.parse(response), opponentSocket;
+        var data = JSON.parse(response), opponentSocket, me;
         
-        draft.getPlayer(data.id, function (err, player) {
+        draft.getPlayer(data.id, function (err, me) {
             if (!err) {
                 draft.getPlayer(data.opponent, function (err2, opponent) {
                     if (!err2) {
                         opponentSocket = io.sockets.sockets[opponent.socket];
                 
-                        draft.updateOpponent(player.id, opponent.id);
+                        draft.updateOpponent(me.id, opponent.id);
                         
-                        opponentSocket.emit('start game', JSON.stringify(player));
+                        opponentSocket.emit('start game', JSON.stringify(me));
                     }
                 });
             }
@@ -173,8 +132,9 @@ io.sockets.on('connection', function (socket) {
         var online = draft.playersOnline();
         io.sockets.emit('online', online);
     });
+
 });
 
-app.listen(3000);
+
 
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);

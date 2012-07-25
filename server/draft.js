@@ -34,6 +34,7 @@ addToQueue = function (id) {
 };
 
 
+
 nextID = function () {
    Counter += 1;
    return Counter;
@@ -48,23 +49,23 @@ exports.players = function () {
     return Players;
 };
 
-exports.createPlayer = function (socketid, fn) {
+exports.createPlayer = function (id, fn) {
     var obj = {}, err = false;
     
-    if (!Players.hasOwnProperty(socketid)) {
+    if (!Players.hasOwnProperty(id)) {
         obj.name = 'Player ' + nextID();
-        obj.id = socketid;
-        obj.socket = socketid; 
+        obj.id = id;
+        obj.socket = id; 
         obj.waiting = true; 
         
-        Players[socketid] = new Player(obj); 
+        Players[id] = new Player(obj); 
     }
     
-    if (!Players.hasOwnProperty(socketid)) {
+    if (!Players.hasOwnProperty(id)) {
         err = true;
     }
     
-    fn(err, Players[socketid]);
+    fn(err, Players[id]);
 };
 
 
@@ -106,7 +107,9 @@ exports.getPlayer = function (id, fn) {
 exports.updateOpponent = function (id, opp) { 
     if (Players.hasOwnProperty(id) && Players.hasOwnProperty(opp)) {
         Players[id].opponent = opp;
+        Players[id].waiting = false;
         Players[opp].opponent = id;
+        Players[opp].waiting = false;
         
         return true;
     }
@@ -126,6 +129,9 @@ exports.destroy = function (id) {
         
         if (Players.hasOwnProperty(opponent)) {
             addToQueue(opponent);
+            delete Players[id];
+            
+            return Players[opponent];
         }
 
         delete Players[id];
@@ -136,4 +142,8 @@ exports.destroy = function (id) {
         return false;
     }
     
+};
+
+exports.exists = function (id) {
+    return (Players.hasOwnProperty(id))
 };

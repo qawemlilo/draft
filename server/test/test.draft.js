@@ -88,9 +88,11 @@ describe('draft', function () {
 
     
     describe('#destroy()', function(){
-        it('should destroy player and return true', function () {
+        it('should destroy player and return true or an object', function () {
             var update = draft.destroy('5767575757575');
             update.should.be.true; 
+            update.should.be.a('object').and.have.property('opponent', '');
+            update.should.be.a('object').and.have.property('waiting', true);
         });
     });
 
