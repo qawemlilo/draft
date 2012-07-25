@@ -1,6 +1,5 @@
 *.zip
 node_modules/
-test/
 
 #################
 ## Eclipse
