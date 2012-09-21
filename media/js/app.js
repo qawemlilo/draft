@@ -9,6 +9,7 @@ var User = function (o) {
     this.waiting = o.waiting;
 },
 
+
 App = {
 
     init: function() {
